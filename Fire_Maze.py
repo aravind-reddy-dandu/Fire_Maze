@@ -155,7 +155,7 @@ def mazeWithFire():
     #     successCount = successCount + pathExists
     # print(successCount)
     dim = 10
-    fillProb = 0.8
+    fillProb = 0.6
     fireprob = 0.5
     maze = generateGrid(dim, fillProb)
     solution = getSol(maze)
@@ -163,14 +163,28 @@ def mazeWithFire():
         print('no solution')
     else:
         firecell = Point(randint(0, dim - 1), randint(0, dim - 1))
-        while (firecell.x == 0 and firecell.y == 0) or (maze[firecell.x][firecell.y] == 1):
+        visited = [[False for i in range(len(maze[0]))] for j in range(len(maze))]
+        visited = [[True if b == 0 else False for b in i] for i in maze]
+        visited[0][0] = True
+        count = 0
+        for row in range(dim):
+            for column in range(dim):
+                if maze[row][column]:
+                    count = count + 1
+        while visited[firecell.x][firecell.y] or (BFS(maze, Point(0, 0), firecell) == -1):
+            visited[firecell.x][firecell.y] = True
             firecell = Point(randint(0, dim - 1), randint(0, dim - 1))
+            count = count + 1
+            if count == dim * dim:
+                return 'Nowhere to put fire'
         maze[firecell.x][firecell.y] = 3
         for point in solution:
             maze = [[3 if b == 2 else b for b in i] for i in maze]
             maze = spreadFire(maze, fireprob)
             if maze[point.x][point.y] == 2:
+                pprint(maze)
                 return 'dead'
+        pprint(maze)
         return 'alive'
 
 
@@ -187,7 +201,7 @@ def spreadFire(mat, fireprob):
                     firecount = firecount + 1
             prob = 1 - pow((1 - fireprob), firecount)
             check = int(np.random.binomial(1, prob, 1))
-            if check == 1 and mat[row][column] != 0:
+            if check == 1 and mat[row][column] == 1:
                 mat[row][column] = 2
     mat = [[2 if b == 3 else b for b in i] for i in mat]
     return mat
