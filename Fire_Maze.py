@@ -155,7 +155,7 @@ def mazeWithFire():
     #     successCount = successCount + pathExists
     # print(successCount)
     dim = 10
-    fillProb = 0.6
+    fillProb = 0.7
     fireprob = 0.5
     maze = generateGrid(dim, fillProb)
     solution = getSol(maze)
