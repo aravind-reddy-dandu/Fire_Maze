@@ -147,16 +147,16 @@ def getSol(mat):
     return path
 
 
-def mazeWithFire():
+def mazeWithFire(dim, fillProb, fireprob):
     # N = 100
     # successCount = 0
     # for _ in itertools.repeat(None, N):
     #     pathExists = simulate(10, 0.8)
     #     successCount = successCount + pathExists
     # print(successCount)
-    dim = 10
-    fillProb = 0.7
-    fireprob = 0.5
+    # dim = 10
+    # fillProb = 0.7
+    # fireprob = 0.5
     maze = generateGrid(dim, fillProb)
     solution = getSol(maze)
     if solution == 0:
@@ -207,4 +207,19 @@ def spreadFire(mat, fireprob):
     return mat
 
 
-print(mazeWithFire())
+# print(mazeWithFire())
+
+N = 10000
+successCount = 0
+fairTrails = 0
+for _ in itertools.repeat(None, N):
+    result = mazeWithFire(10, 0.65, 0.5)
+    print(result)
+    if result == 'alive':
+        successCount = successCount + 1
+        fairTrails = fairTrails + 1
+    elif result == 'dead':
+        fairTrails = fairTrails + 1
+print('Fair trails are ' + str(fairTrails))
+print('Success Count is ' + str(successCount))
+print('Winning probability is ' + str(successCount / fairTrails))
