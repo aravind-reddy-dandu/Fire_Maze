@@ -193,8 +193,8 @@ def mazeWithFireNaive(dim, fillProb, fireprob):
             maze[firecell.x][firecell.y] = 3
             print('Fire cell location is (' + str(firecell.x) + ', ' + str(firecell.y) + ')')
             for point in solution:
-                maze = [[3 if b == 2 else b for b in i] for i in maze]
-                maze = spreadFire(maze, fireprob)
+                # maze = [[3 if b == 2 else b for b in i] for i in maze]
+                maze = spreadFire(maze, fireprob, False)
                 if maze[point.x][point.y] == 2:
                     pprint(maze)
                     mazeCount.append('dead')
@@ -241,9 +241,10 @@ def mazeWithFireRebuild(dim, fillProb, fireprob):
             print('Fire cell location is (' + str(firecell.x) + ', ' + str(firecell.y) + ')')
             point = solution[1]
             while maze[point.x][point.y] != 2:
-                maze = [[3 if b == 2 else b for b in i] for i in maze]
-                maze = spreadFire(maze, fireprob)
+                # maze = [[3 if b == 2 else b for b in i] for i in maze]
+                maze = spreadFire(maze, fireprob, False)
                 solution = getSol(point, dest, maze)
+                maze = [[1 if b == 4 else b for b in i] for i in maze]
                 if solution == 0:
                     mazeCount.append('dead')
                     print('dead')
@@ -264,8 +265,70 @@ def mazeWithFireRebuild(dim, fillProb, fireprob):
         # return 'alive'
 
 
-def spreadFire(mat, fireprob):
+def mazeWithFireThirdStrategy(dim, fillProb, fireprob):
+    source = Point(0, 0)
+    dest = Point(dim - 1, dim - 1)
+    cleanMaze = generateGrid(dim, fillProb)
+    initialsolution = getSol(source, dest, cleanMaze)
+    if initialsolution == 0:
+        print('no solution')
+    else:
+        visited = [[True if b == 0 else False for b in i] for i in cleanMaze]
+        visited[0][0] = True
+        visited[dim - 1][dim - 1] = True
+        count = 0
+        for row in range(dim):
+            for column in range(dim):
+                if visited[row][column]:
+                    count = count + 1
+        mazeCount = []
+        for _ in itertools.repeat(None, simulatonsPerMaze):
+            maze = copy.deepcopy(cleanMaze)
+            solution = copy.deepcopy(initialsolution)
+            firecell = Point(randint(0, dim - 1), randint(0, dim - 1))
+            while visited[firecell.x][firecell.y] or (BFS(maze, Point(0, 0), firecell) == -1):
+                visited[firecell.x][firecell.y] = True
+                firecell = Point(randint(0, dim - 1), randint(0, dim - 1))
+                count = count + 1
+                if count == dim * dim:
+                    return 'Nowhere to put fire'
+            visited[firecell.x][firecell.y] = True
+            maze[firecell.x][firecell.y] = 3
+            print('Fire cell location is (' + str(firecell.x) + ', ' + str(firecell.y) + ')')
+            point = solution[1]
+            while maze[point.x][point.y] != 2:
+                maze = spreadFire(maze, fireprob, False)
+                maze = spreadFire(maze, fireprob, True)
+                maze = spreadFire(maze, fireprob, True)
+                # maze = spreadFire(maze, fireprob, True)
+                solution = getSol(point, dest, maze)
+                maze = [[1 if b == 4 else b for b in i] for i in maze]
+                if solution == 0:
+                    solution = getSol(point, dest, maze)
+                    if solution == 0:
+                        mazeCount.append('dead')
+                        print('dead')
+                        break
+                point = solution[1]
+                if point == dest:
+                    pprint(maze)
+                    mazeCount.append('alive')
+                    print('alive')
+                    break
+                # elif maze[point.x][point.y] == 2:
+                #     pprint(maze)
+                #     mazeCount.append('dead')
+                #     print('dead')
+                #     break
+        return mazeCount
+        # pprint(maze)
+        # return 'alive'
+
+
+def spreadFire(mat, fireprob, fake):
     dim = len(mat)
+    mat = [[3 if b == 2 else b for b in i] for i in mat]
+    mat = [[5 if b == 4 else b for b in i] for i in mat]
     for row in range(dim):
         for column in range(dim):
             pt = Point(row, column)
@@ -273,42 +336,51 @@ def spreadFire(mat, fireprob):
             for i in range(4):
                 rowloc = pt.x + rowNum[i]
                 colloc = pt.y + colNum[i]
-                if isValid(mat, rowloc, colloc) and mat[rowloc][colloc] == 3:
+                if isValid(mat, rowloc, colloc) and (mat[rowloc][colloc] == 3 or mat[rowloc][colloc] == 5):
                     firecount = firecount + 1
             prob = 1 - pow((1 - fireprob), firecount)
             check = int(np.random.binomial(1, prob, 1))
-            if check == 1 and mat[row][column] == 1:
-                mat[row][column] = 2
+            if fake:
+                if check == 1 and mat[row][column] == 1:
+                    mat[row][column] = 4
+            else:
+                if check == 1 and mat[row][column] == 1:
+                    mat[row][column] = 2
     mat = [[2 if b == 3 else b for b in i] for i in mat]
+    mat = [[4 if b == 5 else b for b in i] for i in mat]
     return mat
 
 
 # print(mazeWithFireNaive())
 
-N = 100
-simulatonsPerMaze = 10
-storageDict = {}
+def Run_1_2():
+    global simulatonsPerMaze
+    N = 200
+    simulatonsPerMaze = 10
+    storageDict = {}
+    for i in [5]:
+        fireprob = i / 10
+        successCount = 0
+        fairTrails = 0
+        for _ in itertools.repeat(None, N):
+            response = mazeWithFireRebuild(20, 0.7, fireprob)
+            print(response)
+            if response is None:
+                continue
+            for result in response:
+                if result == 'alive':
+                    successCount = successCount + 1
+                    fairTrails = fairTrails + 1
+                elif result == 'dead':
+                    fairTrails = fairTrails + 1
+        print('Fair trails are ' + str(fairTrails))
+        print('Success Count is ' + str(successCount))
+        print('Winning probability is ' + str(successCount / fairTrails))
+        print(str(fireprob) + ',' + str(fairTrails) + ',' + str(successCount) + ',' + str(successCount / fairTrails))
+        storageDict[str(fireprob)] = str(fireprob) + ',' + str(fairTrails) + ',' + str(successCount) + ',' + str(
+            successCount / fairTrails)
+    for prob in storageDict.values():
+        print(prob)
 
-for i in [5]:
-    fireprob = i / 10
-    successCount = 0
-    fairTrails = 0
-    for _ in itertools.repeat(None, N):
-        response = mazeWithFireRebuild(15, 0.7, fireprob)
-        print(response)
-        if response is None:
-            continue
-        for result in response:
-            if result == 'alive':
-                successCount = successCount + 1
-                fairTrails = fairTrails + 1
-            elif result == 'dead':
-                fairTrails = fairTrails + 1
-    print('Fair trails are ' + str(fairTrails))
-    print('Success Count is ' + str(successCount))
-    print('Winning probability is ' + str(successCount / fairTrails))
-    print(str(fireprob) + ',' + str(fairTrails) + ',' + str(successCount) + ',' + str(successCount / fairTrails))
-    storageDict[str(fireprob)] = str(fireprob) + ',' + str(fairTrails) + ',' + str(successCount) + ',' + str(
-        successCount / fairTrails)
-for prob in storageDict.values():
-    print(prob)
+
+Run_1_2()
