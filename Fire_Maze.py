@@ -116,8 +116,8 @@ def BFS(mat, src: Point, dest: Point):
 
 # Driver code
 def getSol(source, dest, mat):
-    # mat = [[1, 1, 1, 1, 1, 1, 0, 1, 0, 0],
-    #        [0, 1, 1, 0, 1, 1, 1, 1, 1, 0],
+    # mat = [[1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+    #        [0, 1, 1, 0, 1, 1, 1, 1, 0, 0],
     #        [1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
     #        [1, 1, 1, 0, 1, 0, 1, 1, 1, 1],
     #        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -355,7 +355,7 @@ def spreadFire(mat, fireprob, fake):
 
 def Run_1_2():
     global simulatonsPerMaze
-    N = 200
+    N = 10
     simulatonsPerMaze = 10
     storageDict = {}
     for i in [5]:
@@ -363,7 +363,7 @@ def Run_1_2():
         successCount = 0
         fairTrails = 0
         for _ in itertools.repeat(None, N):
-            response = mazeWithFireRebuild(20, 0.7, fireprob)
+            response = mazeWithFireNaive(10, 0.7, fireprob)
             print(response)
             if response is None:
                 continue
@@ -383,4 +383,4 @@ def Run_1_2():
         print(prob)
 
 
-Run_1_2()
+# Run_1_2()
