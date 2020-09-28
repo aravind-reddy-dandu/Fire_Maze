@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from pprint import pprint
 
 class Node():
@@ -121,40 +122,87 @@ def astar(maze, start, end):
                 open_list.append(child)
         #print(len(open_list))
 
-def mazepath(maze, path):
-    w = len(maze)
+def mazepath(maze_path, path):
+    w = len(maze_path)
     for row in range(w):
         for column in range(w):
             if (row, column) in path:
-                maze[row][column] = 0
+                maze_path[row][column] = 0
             else:
-                maze[row][column] = 1
+                maze_path[row][column] = 1
+    return maze_path
+
+
+def thinmaze(maze,prob):
+    w = len(maze)
+    l1 = []
+    l2 = []
+    c = []
+    for row in range(w):
+        for column in range(w):
+            if maze[row][column] == 1:
+                c = (row, column)
+                l1.append(c)
+    count = round((len(l1))*prob)
+    for i in range(0, count):
+        a = random.choice(l1)
+        l2.append(a)
+        l1.remove(a)
+        i += 1
+    for row in range(w):
+        for column in range(w):
+            if (row, column) in l2:
+                maze[row][column] = 0
     return maze
 
+
 def main():
-    trails = 100
+    trails = 10
+    rho = 0.4     # removing (rho*100) % of the obstacles from the maze
     success = 0
-    failure = 0
-    for i in range(0, trails):
+    success_thin = 0
+    for i in range(1, trails + 1):
         maze = generateGrid(10, 0.7)
         #0 is free path and 1 is blocked path
         start = (0, 0)
         end = (9, 9)
         path = astar(maze, start, end)
+        print("Trail No:", i)
         if path == None:
             print('No path from source to the goal')
-            failure += 1
-        elif path != 0:
-            print("There is a path from source to goal and the path is")
+        else:
+            print("There is a path from source to goal")
             success += 1
-            maze = mazepath(maze, path)
-        pprint(maze)
+            maze1 = mazepath(maze, path)
+            #pprint(maze1)
+        print("After maze thinning")
+        #removing a fraction of obstacles in the maze
+        thin_maze = thinmaze(maze, rho)
+        thin_path = astar(thin_maze, start, end)
+        if thin_path == None:
+            print('No path from source to the goal')
+        else:
+            print("There is a path from source to goal")
+            success_thin += 1
+            maze2 = mazepath(maze, thin_path)
+            #pprint(maze2)
         i += 1
-    success_prob = (success/trails)*100
-    print("Success probability with A Star euclidian distance is", success_prob, "%")
+    success_prob = (success / trails) * 100
+    print("Success % with A Star euclidian distance is", success_prob, "%")
+    success_prob_thin = (success_thin / trails) * 100
+    print("Success % with A Star euclidian distance after removing", rho * 100, "% of the obstacles is",
+          success_prob_thin, "%")
+
 
 if __name__ == '__main__':
+    thin_path = []
     main()
+
+
+
+
+
+
 
 
 
