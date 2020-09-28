@@ -107,9 +107,9 @@ def astar(maze, start, end):
             # Create the f, g, and h values
             child.g = current_node.g + 1
             # square of euclidian distance as heuristics
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            #child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
             # Manhattan distance heuristic
-            #child.h = (abs(end_node.position[0] - child.position[0]) + abs(end_node.position[1] - child.position[1]))
+            child.h = (abs(end_node.position[0] - child.position[0]) + abs(end_node.position[1] - child.position[1]))
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -155,10 +155,104 @@ def thinmaze(maze,prob):
                 maze[row][column] = 0
     return maze
 
+def thin_heuristic(thin_maze, start_node, end_node):
+    thinPath = astar(thin_maze, start_node, end_node)
+    return len(thinPath) if thinPath != None else 0
+
+def astar_thinning(maze,thin_maze, start, end):
+    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+
+    # Create start and end node
+    start_node = Node(None, start)
+    start_node.g = start_node.h = start_node.f = 0
+    end_node = Node(None, end)
+    end_node.g = end_node.h = end_node.f = 0
+
+    # Initialize both open and closed list
+    open_list = []
+    closed_list = []
+
+    # Add the start node
+    open_list.append(start_node)
+
+    # Loop until you find the end
+    while len(open_list) > 0:
+
+        # Get the current node
+        current_node = open_list[0]
+        current_index = 0
+        for index, item in enumerate(open_list):
+            if item.f < current_node.f:
+                current_node = item
+                current_index = index
+
+        # Pop current off open list, add to closed list
+        open_list.pop(current_index)
+        closed_list.append(current_node)
+
+        # Found the goal
+        if current_node == end_node:
+            path = []
+            current = current_node
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            return path[::-1] # Return reversed path
+
+        # Generate children
+        children = []
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+            # add (-1, -1), (-1, 1), (1, -1), (1, 1) in the above list for travelling diagonally in the maze.
+            # Get node position
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+
+            # Make sure the children are within the maze boundaries
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+                continue
+
+            # skip if the child node is a blockage i.e. 1
+            if maze[node_position[0]][node_position[1]] != 0:
+                continue
+
+            # Create new node
+            new_node = Node(current_node, node_position)
+
+            # if the child node is already in closed list then we ignore it
+            if new_node in closed_list:
+                continue
+
+            # Append
+            children.append(new_node)
+
+        # Loop through children
+        for child in children:
+
+            # Child is on the closed list
+            for closed_child in closed_list:
+                if child == closed_child:
+                    continue
+
+            # Create the f, g, and h values
+            child.g = current_node.g + 1
+            # square of euclidian distance as heuristics
+            #child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            # Manhattan distance heuristic
+            child.h = thin_heuristic(thin_maze, child.position, end_node.position)
+            child.f = child.g + child.h
+
+            # Child is already in the open list
+            for open_node in open_list:
+                if child == open_node and child.g > open_node.g:
+                    continue
+
+            # Add the child to the open list
+            if child not in open_list:
+                open_list.append(child)
+        #print(len(open_list))
 
 def main():
-    trails = 10
-    rho = 0.4     # removing (rho*100) % of the obstacles from the maze
+    trails = 200
+    rho = 0.15     # removing (rho*100) % of the obstacles from the maze
     success = 0
     success_thin = 0
     for i in range(1, trails + 1):
@@ -178,7 +272,7 @@ def main():
         print("After maze thinning")
         #removing a fraction of obstacles in the maze
         thin_maze = thinmaze(maze, rho)
-        thin_path = astar(thin_maze, start, end)
+        thin_path = astar_thinning(maze,thin_maze, start, end)
         if thin_path == None:
             print('No path from source to the goal')
         else:
@@ -188,9 +282,9 @@ def main():
             #pprint(maze2)
         i += 1
     success_prob = (success / trails) * 100
-    print("Success % with A Star euclidian distance is", success_prob, "%")
+    print("Success % with A Star manhattan distance is", success_prob, "%")
     success_prob_thin = (success_thin / trails) * 100
-    print("Success % with A Star euclidian distance after removing", rho * 100, "% of the obstacles is",
+    print("Success % with A Star thinning with rho value ", rho * 100, "% of the obstacles is",
           success_prob_thin, "%")
 
 
