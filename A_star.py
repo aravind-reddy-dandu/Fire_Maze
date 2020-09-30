@@ -33,7 +33,7 @@ def generateGrid(dim, prob):
     return grid
 
 
-def astar(maze, heuristic, start, end):
+def astar(maze, start, end):
 
     # generate the start and end nodes
     StartNode = Node(None, start)
@@ -44,7 +44,6 @@ def astar(maze, heuristic, start, end):
     # initializing open and closed lists
     OpenList = []
     ClosedList = []
-    visited_node = {}
 
     # append Start Node to open list
     OpenList.append(StartNode)
@@ -110,21 +109,10 @@ def astar(maze, heuristic, start, end):
             # generating the c, h, and t values for the child
             Child.c = CurrNode.c + 1
             # square of euclidian distance as heuristics
-            if heuristic == "Euclidian":
-                Child.h = ((Child.position[0] - EndNode.position[0]) ** 2) + ((Child.position[1] - EndNode.position[1]) ** 2)
+            #Child.h = ((Child.position[0] - EndNode.position[0]) ** 2) +
+            # ((Child.position[1] - EndNode.position[1]) ** 2)
             # Manhattan distance heuristic
-            elif heuristic == "Manhattan":
-                Child.h = (abs(EndNode.position[0] - Child.position[0]) + abs(EndNode.position[1] - Child.position[1]))
-            elif heuristic == "All_direction":
-                if Child.position not in visited_node:
-                    all_path = astar_all_directions(maze, Child.position, EndNode.position)
-                    Child.h = len(all_path) if all_path is not None else 0
-                    if all_path is not None:
-                        for i in all_path:
-                            visited_node[tuple(i)] = len(all_path)
-                            all_path.remove(i)
-                else:
-                    Child.h = visited_node[Child.position]
+            Child.h = (abs(EndNode.position[0] - Child.position[0]) + abs(EndNode.position[1] - Child.position[1]))
             Child.t = Child.c + Child.h
 
             # if the child is already in the open list and the child's
@@ -173,8 +161,7 @@ def thinmaze(maze,prob):
     return maze
 
 def thin_heuristic(thin_maze, start_node, end_node):
-    dist = "Manhattan"
-    thinPath = astar(thin_maze, dist, start_node, end_node)[0]
+    thinPath = astar(thin_maze, start_node, end_node)[0]
     return len(thinPath) if thinPath != None else 0
 
 def astar_thinning(maze,thin_maze, start, end):
@@ -188,7 +175,7 @@ def astar_thinning(maze,thin_maze, start, end):
     # initializing open and closed lists
     OpenList = []
     ClosedList = []
-    visited_nodes = {}
+
     # append Start Node to open list
     OpenList.append(StartNode)
 
@@ -220,6 +207,7 @@ def astar_thinning(maze,thin_maze, start, end):
         # We generate the children for the node which was popped from the open list.
         Children = []
         for NewPosition in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+            # add (-1, -1), (-1, 1), (1, -1), (1, 1) in the above list for travelling diagonally in the maze.
             # knowing the node position
             NodePosition = (CurrNode.position[0] + NewPosition[0], CurrNode.position[1] + NewPosition[1])
 
@@ -249,16 +237,8 @@ def astar_thinning(maze,thin_maze, start, end):
             # generating the c, h, and t values for the child
             Child.c = CurrNode.c + 1
             # Thin MAZE heuristic
-            if Child.position not in visited_nodes:
-                thinPath = thin_heuristic(thin_maze, Child.position, end_node.position)
-                Child.h = len(thinPath) if thinPath is not None else 0
-                if thinPath is not None:
-                    for i in thinPath:
-                        visited_nodes[i] = len(thinPath)
-                        thinPath.remove(i)
-            else:
-                Child.h = visited_nodes[Child.position]
-            Child.t = Child.g + Child.c
+            Child.h = thin_heuristic(thin_maze, Child.position, EndNode.position)
+            Child.t = Child.c + Child.h
 
             # Child is already in the open list
             for OpenNode in OpenList:
@@ -273,7 +253,7 @@ def astar_thinning(maze,thin_maze, start, end):
 # relaxing A star path
 
 
-def astar_all_directions(maze, start, end):
+def a_star_relaxed(maze, start, end):
 
     # generate the start and end nodes
     StartNode = Node(None, start)
@@ -366,6 +346,103 @@ def astar_all_directions(maze, start, end):
                 OpenList.append(Child)
     return [None, ExploredNodes]
 
+def pr_heuristic(maze, start_node, end_node):
+    pr_path = a_star_relaxed(maze, start_node, end_node)[0]
+    return len(pr_path) if pr_path != None else 0
+
+def astar_path_relaxation(maze, start, end):
+
+    # generate the start and end nodes
+    StartNode = Node(None, start)
+    StartNode.c = StartNode.h = StartNode.t = 0
+    EndNode = Node(None, end)
+    EndNode.c = EndNode.h = EndNode.t = 0
+
+    # initializing open and closed lists
+    OpenList = []
+    ClosedList = []
+
+    # append Start Node to open list
+    OpenList.append(StartNode)
+
+    # Keep looping until we find the end node
+    while len(OpenList) > 0:
+
+        # extracting the current node
+        CurrNode = OpenList[0]
+        CurrIndex = 0
+        for index, item in enumerate(OpenList):
+            if item.t < CurrNode.t:
+                CurrNode = item
+                CurrIndex = index
+
+        # Pop-ing the current off the open list and appending it to the closed list
+        OpenList.pop(CurrIndex)
+        ClosedList.append(CurrNode)
+        ExploredNodes = len(ClosedList)
+
+        # if we find the goal then:
+        if CurrNode == EndNode:
+            path = []
+            current = CurrNode
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            return [path[::-1], ExploredNodes]           # we return the reversed path as output
+
+        # We generate the children for the node which was popped from the open list.
+        Children = []
+        for NewPosition in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+            # add (-1, -1), (-1, 1), (1, -1), (1, 1) in the above list for travelling diagonally in the maze.
+            # knowing the node position
+            NodePosition = (CurrNode.position[0] + NewPosition[0], CurrNode.position[1] + NewPosition[1])
+
+            # Verifying if the children are within the boundaries. If they arent then we skip those children
+            if NodePosition[0] > (len(maze) - 1) or NodePosition[0] < 0 or NodePosition[1] > (len(maze[len(maze)-1]) -1) or NodePosition[1] < 0:
+                continue
+
+            # skip the Child node if there is a blockage i.e. 1
+            if maze[NodePosition[0]][NodePosition[1]] != 0:
+                continue
+
+            # generate a new node
+            NewNode = Node(CurrNode, NodePosition)
+
+            # if the Child node is already in closed list then we ignore it
+            if NewNode in ClosedList:
+                continue
+
+            # Append the node into children of the node which was popped
+            Children.append(NewNode)
+
+        # Loop through Children
+        for Child in Children:
+
+            # Child is on the closed list
+            for ClosedChild in ClosedList:
+                if Child == ClosedChild:
+                    continue
+
+            # generating the c, h, and t values for the child
+            Child.c = CurrNode.c + 1
+            # square of euclidian distance as heuristics
+            #Child.h = ((Child.position[0] - EndNode.position[0]) ** 2) +
+            # ((Child.position[1] - EndNode.position[1]) ** 2)
+            # Path relaxation heuristic
+            Child.h = pr_heuristic(maze, Child.position, EndNode.position)
+            Child.t = Child.c + Child.h
+
+            # if the child is already in the open list and the child's
+            # current position is greater than current open node position then we skip it
+            for OpenNode in OpenList:
+                if Child == OpenNode and Child.c > OpenNode.c:
+                    continue
+
+            # if child is not in the open list then we add them to it.
+            if Child not in OpenList:
+                OpenList.append(Child)
+    return [None, ExploredNodes]
+
 def main():
     trails = 1000
     # removing (rho*100) % of the obstacles from the maze
@@ -377,7 +454,7 @@ def main():
         maze = generateGrid(10, 0.7)
         start = (0, 0)
         end = (9, 9)
-        path_and_ExploredNodes_pr = astar(maze, "All_direction", start, end)
+        path_and_ExploredNodes_pr = astar_path_relaxation(maze, start, end)
         path_pr = path_and_ExploredNodes_pr[0]
         Explored_Nodes_pr = path_and_ExploredNodes_pr[1]
         if path_pr != None:
@@ -394,7 +471,7 @@ def main():
             start = (0, 0)
             end = (9, 9)
             # Normal A Star with manhattan distance and without any relaxation
-            path_and_ExploredNodes = astar(maze, "Manhattan", start, end)
+            path_and_ExploredNodes = astar(maze, start, end)
             path = path_and_ExploredNodes[0]
             Explored_Nodes = path_and_ExploredNodes[1]
             if path != None:
@@ -403,7 +480,7 @@ def main():
                 #pprint(maze1)
             # Thinning method
             thin_maze = thinmaze(maze, rho)
-            thin_path_and_ExploredNodes = astar_thinning(maze, thin_maze, start, end)
+            thin_path_and_ExploredNodes = astar_thinning(maze,thin_maze, start, end)
             thin_path = thin_path_and_ExploredNodes[0]
             Explored_Nodes_thinning = thin_path_and_ExploredNodes[1]
             if thin_path != None:
