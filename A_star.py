@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from statistics import mean
 from pprint import pprint
 from copy import copy, deepcopy
 
@@ -252,8 +253,8 @@ def astar_thinning(maze,thin_maze, start, end):
 def main():
     trails = 200
     rho = 0.15     # removing (rho*100) % of the obstacles from the maze
-    success = 0
-    success_thin = 0
+    L1 = []
+    L2 = []
     for i in range(1, trails + 1):
         maze = generateGrid(10, 0.7)
         start = (0, 0)
@@ -261,33 +262,28 @@ def main():
         path_and_ExploredNodes = astar(maze, start, end)
         path = path_and_ExploredNodes[0]
         Explored_Nodes = path_and_ExploredNodes[1]
-        print("Trail No:", i)
         if path == None:
-            print('No path and nodes explored using A-star is:', Explored_Nodes)
+            continue
         else:
-            print("Path present and nodes explored using A-star is:", Explored_Nodes)
-            success += 1
+            L1.append(Explored_Nodes)
             maze1 = mazepath(maze, path)
             #pprint(maze1)
-        print("After maze thinning")
-        #removing a fraction of obstacles in the maze
+        # removing a fraction of obstacles in the maze
         thin_maze = thinmaze(maze, rho)
         thin_path_and_ExploredNodes = astar_thinning(maze,thin_maze, start, end)
         thin_path = thin_path_and_ExploredNodes[0]
         Explored_Nodes_thinning = thin_path_and_ExploredNodes[1]
         if thin_path == None:
-            print('No path and nodes explored using A-star thinning is:', Explored_Nodes_thinning)
+            continue
         else:
-            print("Path present and nodes explored using A-star thinning is:", Explored_Nodes_thinning)
-            success_thin += 1
             maze2 = mazepath(maze, thin_path)
+            L2.append(Explored_Nodes_thinning)
             #pprint(maze2)
         i += 1
-    #success_prob = (success / trails) * 100
-    #print("Success % with A Star manhattan distance is", success_prob, "%")
-    #success_prob_thin = (success_thin / trails) * 100
-    #print("Success % with A Star thinning with rho value ", rho * 100, "% of the obstacles is", success_prob_thin, "%")
-
+    Avg_NodesExplored = round(mean(L1))
+    Avg_NodesExplored_AfterThinning = round(mean(L2))
+    print("Nodes explored before thinning:", Avg_NodesExplored)
+    print("Nodes explored after thinning:", Avg_NodesExplored_AfterThinning)
 
 if __name__ == '__main__':
     thin_path = []
