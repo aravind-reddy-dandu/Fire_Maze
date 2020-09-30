@@ -422,7 +422,7 @@ def main():
             if thin_path != None:
                 L2.append(Explored_Nodes_thinning)
                 maze2 = mazepath(maze, thin_path)
-                time_m += time.process_time() - start_time_m
+                time_thin += time.process_time() - start_time_thin
                 success_thin += 1
                 #pprint(maze2)
             i += 1
