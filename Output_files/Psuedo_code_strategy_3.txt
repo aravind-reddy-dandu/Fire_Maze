@@ -1,0 +1,23 @@
+// generate grid with dimensions
+maze = generateGrid(dim, fillProb) 
+solution = initialsolution for grid
+firecell = generate a new random point
+point = First point in solution
+heat = dimension of maze
+while maze[point.x][point.y] not in fire
+	// Spread fire normally
+   maze = spreadFire(normal)
+   while solution == 0 and heat > 0:
+		maze = spreadFakeFire(maze, heat, 1)
+		solution = Solution from current point
+		heat = heat - 1
+   maze = put off fake fire
+   if solution == 0:
+		solution = Get solution
+		if no solution
+		 return dead
+		 break
+   point = First point in solution
+   if point == dest:
+		return alive
+return dead        
