@@ -1,0 +1,8 @@
+maze = generateGrid(dim, fillProb) // generate grid with dimensions
+solution = initialsolution for grid
+firecell = generate a new random point
+for point in solution
+	   maze = spreadFire(normal) // Spread fire normally
+	   if point catches fire:
+			return dead
+return alive       
