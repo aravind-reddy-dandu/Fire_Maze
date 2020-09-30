@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from pprint import pprint
+from copy import copy, deepcopy
 
 class Node():
     # Node class for the A star algorithm
@@ -15,6 +16,7 @@ class Node():
         return self.position == other.position
 
 def generateGrid(dim, prob):
+    # 0 is free path and 1 is blocked path
     # dim = 10
     grid = []
     for row in range(dim):
@@ -59,6 +61,7 @@ def astar(maze, start, end):
         # Pop-ing the current off the open list and appending it to the closed list
         OpenList.pop(CurrIndex)
         ClosedList.append(CurrNode)
+        ExploredNodes = len(ClosedList)
 
         # if we find the goal then:
         if CurrNode == EndNode:
@@ -67,7 +70,7 @@ def astar(maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1]             # we return the reversed path as output
+            return [path[::-1], ExploredNodes]           # we return the reversed path as output
 
         # We generate the children for the node which was popped from the open list.
         Children = []
@@ -120,7 +123,7 @@ def astar(maze, start, end):
             # if child is not in the open list then we add them to it.
             if Child not in OpenList:
                 OpenList.append(Child)
-        ExploredNodes = len(ClosedList)
+    return [None, ExploredNodes]
 
 def mazepath(maze_path, path):
     w = len(maze_path)  # displays the path of the maze with all cells being 1 and path cells as 0.
@@ -138,6 +141,7 @@ def thinmaze(maze,prob):
     l1 = []
     l2 = []
     c = []
+    maze1 = deepcopy(maze)
     for row in range(w):
         for column in range(w):
             if maze[row][column] == 1:
@@ -188,6 +192,7 @@ def astar_thinning(maze,thin_maze, start, end):
         # Pop-ing the current off the open list and appending it to the closed list
         OpenList.pop(CurrIndex)
         ClosedList.append(CurrNode)
+        ExploredNodesAfterThinning = len(ClosedList)
 
         # if we find the goal then:
         if CurrNode == EndNode:
@@ -196,7 +201,7 @@ def astar_thinning(maze,thin_maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1]                # we return the reversed path as output
+            return [path[::-1], ExploredNodesAfterThinning]      # we return the reversed path as output
 
         # We generate the children for the node which was popped from the open list.
         Children = []
@@ -241,7 +246,7 @@ def astar_thinning(maze,thin_maze, start, end):
             # if child is not in the open list then we add them to it.
             if Child not in OpenList:
                 OpenList.append(Child)
-        ExploredNodesAfterThinning = len(ClosedList)
+    return [None, ExploredNodesAfterThinning]
 
 
 def main():
@@ -251,35 +256,37 @@ def main():
     success_thin = 0
     for i in range(1, trails + 1):
         maze = generateGrid(10, 0.7)
-        #0 is free path and 1 is blocked path
         start = (0, 0)
         end = (9, 9)
-        path = astar(maze, start, end)
+        path_and_ExploredNodes = astar(maze, start, end)
+        path = path_and_ExploredNodes[0]
+        Explored_Nodes = path_and_ExploredNodes[1]
         print("Trail No:", i)
         if path == None:
-            print('No path from source to the goal')
+            print('No path and nodes explored using A-star is:', Explored_Nodes)
         else:
-            print("There is a path from source to goal")
+            print("Path present and nodes explored using A-star is:", Explored_Nodes)
             success += 1
             maze1 = mazepath(maze, path)
             #pprint(maze1)
         print("After maze thinning")
         #removing a fraction of obstacles in the maze
         thin_maze = thinmaze(maze, rho)
-        thin_path = astar_thinning(maze,thin_maze, start, end)
+        thin_path_and_ExploredNodes = astar_thinning(maze,thin_maze, start, end)
+        thin_path = thin_path_and_ExploredNodes[0]
+        Explored_Nodes_thinning = thin_path_and_ExploredNodes[1]
         if thin_path == None:
-            print('No path from source to the goal')
+            print('No path and nodes explored using A-star thinning is:', Explored_Nodes_thinning)
         else:
-            print("There is a path from source to goal")
+            print("Path present and nodes explored using A-star thinning is:", Explored_Nodes_thinning)
             success_thin += 1
             maze2 = mazepath(maze, thin_path)
             #pprint(maze2)
         i += 1
-    success_prob = (success / trails) * 100
-    print("Success % with A Star manhattan distance is", success_prob, "%")
-    success_prob_thin = (success_thin / trails) * 100
-    print("Success % with A Star thinning with rho value ", rho * 100, "% of the obstacles is",
-          success_prob_thin, "%")
+    #success_prob = (success / trails) * 100
+    #print("Success % with A Star manhattan distance is", success_prob, "%")
+    #success_prob_thin = (success_thin / trails) * 100
+    #print("Success % with A Star thinning with rho value ", rho * 100, "% of the obstacles is", success_prob_thin, "%")
 
 
 if __name__ == '__main__':
