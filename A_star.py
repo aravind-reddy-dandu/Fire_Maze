@@ -251,7 +251,7 @@ def astar_thinning(maze,thin_maze, start, end):
 
 
 def main():
-    trails = 200
+    trails = 1000
     # removing (rho*100) % of the obstacles from the maze
     L1 = []
     L2 = []
