@@ -399,7 +399,7 @@ def main():
     for r in range(1, 10):
         rho = round(r*(0.1), 1)
         for i in range(1, trails + 1):
-            maze = generateGrid(10, 0.3)
+            maze = generateGrid(10, 0.7)
             start = (0, 0)
             end = (9, 9)
             # Normal A Star with manhattan distance and without any relaxation
