@@ -252,38 +252,41 @@ def astar_thinning(maze,thin_maze, start, end):
 
 def main():
     trails = 200
-    rho = 0.15     # removing (rho*100) % of the obstacles from the maze
+    # removing (rho*100) % of the obstacles from the maze
     L1 = []
     L2 = []
-    for i in range(1, trails + 1):
-        maze = generateGrid(10, 0.7)
-        start = (0, 0)
-        end = (9, 9)
-        path_and_ExploredNodes = astar(maze, start, end)
-        path = path_and_ExploredNodes[0]
-        Explored_Nodes = path_and_ExploredNodes[1]
-        if path == None:
-            continue
-        else:
-            L1.append(Explored_Nodes)
-            maze1 = mazepath(maze, path)
-            #pprint(maze1)
-        # removing a fraction of obstacles in the maze
-        thin_maze = thinmaze(maze, rho)
-        thin_path_and_ExploredNodes = astar_thinning(maze,thin_maze, start, end)
-        thin_path = thin_path_and_ExploredNodes[0]
-        Explored_Nodes_thinning = thin_path_and_ExploredNodes[1]
-        if thin_path == None:
-            continue
-        else:
-            maze2 = mazepath(maze, thin_path)
-            L2.append(Explored_Nodes_thinning)
-            #pprint(maze2)
-        i += 1
-    Avg_NodesExplored = round(mean(L1))
-    Avg_NodesExplored_AfterThinning = round(mean(L2))
-    print("Nodes explored before thinning:", Avg_NodesExplored)
-    print("Nodes explored after thinning:", Avg_NodesExplored_AfterThinning)
+    for r in range(1, 10):
+        rho = round(r*(0.1), 1)
+        for i in range(1, trails + 1):
+            maze = generateGrid(10, 0.7)
+            start = (0, 0)
+            end = (9, 9)
+            path_and_ExploredNodes = astar(maze, start, end)
+            path = path_and_ExploredNodes[0]
+            Explored_Nodes = path_and_ExploredNodes[1]
+            if path == None:
+                continue
+            else:
+                L1.append(Explored_Nodes)
+                maze1 = mazepath(maze, path)
+                #pprint(maze1)
+            # removing a fraction of obstacles in the maze
+            thin_maze = thinmaze(maze, rho)
+            thin_path_and_ExploredNodes = astar_thinning(maze,thin_maze, start, end)
+            thin_path = thin_path_and_ExploredNodes[0]
+            Explored_Nodes_thinning = thin_path_and_ExploredNodes[1]
+            if thin_path == None:
+                continue
+            else:
+                maze2 = mazepath(maze, thin_path)
+                L2.append(Explored_Nodes_thinning)
+                #pprint(maze2)
+            i += 1
+        Avg_NodesExplored = round(mean(L1))
+        Avg_NodesExplored_AfterThinning = round(mean(L2))
+        print("RHO value:", rho)
+        print("Nodes explored before thinning:", Avg_NodesExplored)
+        print("Nodes explored after thinning:", Avg_NodesExplored_AfterThinning)
 
 if __name__ == '__main__':
     thin_path = []
