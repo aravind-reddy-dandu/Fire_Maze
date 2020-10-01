@@ -392,6 +392,7 @@ def main():
             L3.append(Explored_Nodes_pr)
             time_all += time.process_time() - start_time_all
             success_all += 1
+        i += 1
     Avg_NodesExplored_pr = round(mean(L3))
     print("Nodes explored after path relaxation: ", Avg_NodesExplored_pr," with an average time :",time_all/success_all)
 
@@ -399,7 +400,7 @@ def main():
     for r in range(1, 10):
         rho = round(r*(0.1), 1)
         for i in range(1, trails + 1):
-            maze = generateGrid(10, 0.3)
+            maze = generateGrid(10, 0.7)
             start = (0, 0)
             end = (9, 9)
             # Normal A Star with manhattan distance and without any relaxation
