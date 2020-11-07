@@ -31,7 +31,7 @@ of a fire spreading to a cell is given by $1 - (1-q)^k$ where k is the
 number of neighbours on fire
 
 ![Typical maze data-structure with fire
-spreading](Maze_example.PNG){#fig}
+spreading](Documents/Tex_Images/Maze_example.PNG)
 
 Our goal is to find a path for the agent to reach the destination
 without catching fire. Avoiding obstacles and fire, three strategies are
@@ -67,7 +67,7 @@ prev attribute to every point traversed. Tracing back from destination
 gives the path. This functionality is written in *getSolution* method.A
 sample solution will look like below
 
-![Solution found by BFS method](Sample_solution.PNG){#fig}
+![Solution found by BFS method](Documents/Tex_Images/Sample_solution.PNG){#fig}
 
 After finding a solution, the agent will just traverse this path without
 considering the movement of fire at all. This naive approach has a
@@ -109,7 +109,7 @@ step the agent makes. As fire is considered as a block in the path, the
 current state of fire is taken into consideration and the agent will try
 to prevent going in that direction.
 
-![Strategy 2 at work](Strategy_2_at_work.PNG){#fig}
+![Strategy 2 at work](Documents/Tex_Images/Strategy_2_at_work.PNG){#fig}
 
 **Psuedo Code**:
 
@@ -166,7 +166,7 @@ which will be eventually be put off. We can see that all neighboring
 cells to 2 are put on fake fire with heat=1. We can also see that path
 taken is avoiding the top right corner.
 
-![Fake fire at work](Fake_fire_at_work.PNG){#fig}
+![Fake fire at work](Documents/Tex_Images/Fake_fire_at_work.PNG){#fig}
 
 **Psuedo Code**:
 
@@ -218,7 +218,7 @@ has an edge over strategy 2 for almost all the values of flammability.
 For strategy 1, as it is faster, the maze size can be until 50. For
 
 ![Graph plotting Winning probability against
-Flammability](First_part_strategies.png){#fig}
+Flammability](Documents/Tex_Images/First_part_strategies.png){#fig}
 
 Maze Thinning
 =============
@@ -291,7 +291,7 @@ while the open_list is not empty
         open_list.append(child)
 ```
 
-![Maze as a 2\*2 matrix with path traced along 0's](A_star.png){#fig}
+![Maze as a 2\*2 matrix with path traced along 0's](Documents/Tex_Images/A_star.png){#fig}
 
 ### Conclusion
 
@@ -321,7 +321,7 @@ paths. If we save the heuristic values calculated then, we won't have to
 recompute them in each iteration. **This has reduced the time cost by 10
 folds**
 
-![Graph plotting Nodes explored for Rho values](Q2.jpg){#fig}
+![Graph plotting Nodes explored for Rho values](Documents/Tex_Images/Q2.jpg){#fig}
 
 ### Conclusion
 
