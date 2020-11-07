@@ -1,13 +1,10 @@
 ---
-abstract: |
+Abstract: |
   Exploring two types of mazes. 1- Using traditional strategies to find
   a path in a maze with fire propagating from random points. 2- Using
   A\* algorithm to find path in a maze with blocks using different types
   of heuristics
-author:
-- |
-  \
-title: Exploring Search CS 520
+Title: Exploring Search CS 520
 ---
 
 This *Maze* is on Fire
